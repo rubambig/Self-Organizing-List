@@ -3,6 +3,7 @@
 * @author Gloire Rubambiza
 * @version 03/13/2017
 * **********************************************/
+Copyright (c) 2017 Gloire Rubambiza All Rights Reserved.
 #include "list.h"
 #include <string.h>
 #define FIRST 1
