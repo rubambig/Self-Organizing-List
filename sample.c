@@ -279,3 +279,85 @@ void CodeSearch (struct Book list[], int numOfBooks)
 
 	printf ("\n\n");
 }
+
+Identifier: printf, Count: 19 
+
+Identifier: targetCode, Count: 10 
+
+Identifier: while, Count: 4 
+
+Identifier: price, Count: 9 
+
+Identifier: if, Count: 8 
+
+Identifier: numOfBooks, Count: 26 
+
+Identifier: list, Count: 38 
+
+Identifier: FindPrice, Count: 3 
+
+Identifier: scanf, Count: 5 
+
+Identifier: do, Count: 3 
+
+Identifier: float, Count: 8 
+
+Identifier: int, Count: 27 
+
+Identifier: Book, Count: 17 
+
+Identifier: struct, Count: 17 
+
+Identifier: CodeSearch, Count: 3 
+
+Identifier: void, Count: 10 
+
+Identifier: targetPrice, Count: 9 
+
+Identifier: Count, Count: 3 
+
+Identifier: PriceSearch, Count: 3 
+
+Identifier: return, Count: 4 
+
+Identifier: i, Count: 17 
+
+Identifier: code, Count: 8 
+
+Identifier: for, Count: 5 
+
+Identifier: temp, Count: 3 
+
+Identifier: smallest, Count: 7 
+
+Identifier: pos, Count: 9 
+
+Identifier: Sort, Count: 3 
+
+Identifier: count, Count: 3 
+
+Identifier: index, Count: 6 
+
+Identifier: printArray, Count: 4 
+
+Identifier: aCode, Count: 5 
+
+Identifier: numOfBooksPtr, Count: 6 
+
+Identifier: aPrice, Count: 5 
+
+Identifier: loadArray, Count: 3 
+
+Identifier: MAX, Count: 2 
+
+Identifier: include, Count: 1 
+
+Identifier: stdio, Count: 1 
+
+Identifier: h, Count: 1 
+
+Identifier: define, Count: 1 
+
+Identifier: main, Count: 1 
+
+Identifier: else, Count: 1 

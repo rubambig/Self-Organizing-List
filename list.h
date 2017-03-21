@@ -1,9 +1,13 @@
-/*************************************************
+/*********************************************************
 * The data definition for the self-organizing list
+* Provides skeleton for operations on the linked-list
 * @author Gloire Rubambiza
 * @version 03/13/2017
+* @filename: list.h
+* Project developed as part of the System Programming
+* class(CIS 361) at Grand Valley State University.
 * Copyright (c) 2017 Gloire Rubambiza All Rights Reserved.
-*************************************************/
+**********************************************************/
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -12,11 +16,10 @@
 
 
  // Define the datatypes to be used
-
- // Define a node structure with all its components
  typedef char * Identifier;
  typedef int occurence;
 
+// Define a node structure with all its components
  struct Nodes{
    Identifier identifier;
    occurence count;

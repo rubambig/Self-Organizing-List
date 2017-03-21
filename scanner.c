@@ -1,409 +1,371 @@
-  #include <stdio.h>
-  #include <ctype.h>
-  #include <sys/stat.h>
-  #include <string.h>
-  #include <stdlib.h>
-  #include "list.h"
-  #define MAX 50
+/***************************************************************
+* The main logic of scanning the sample file.
+* Saves all the identifiers to the linked list.
+* Uses a state machine concept to process the tokens in the file.
+* @author Gloire Rubambiza
+* @version 03/13/2017
+* @filename: scanner.c
+* Project developed as part of the System Programming
+* class(CIS 361) at Grand Valley State University.
+* Copyright (c) 2017 Gloire Rubambiza All Rights Reserved.
+* *************************************************************/
 
-  /************************************************
-  * Uses state to know the next character read from
-  * the local file. Builds a string if an identifier
-  * is found. The states are as follow:
-  * 0 is space, 1 is alphanum, 2 is comments, 3 is
-  * string quotes, 4 is newline/tab, 5 for symbols
-  **************************************************/
-  int main(){
-    // Initialize all global variables
-    printf("We're getting started\n\n");
-      int state = 0;
-      char ch, temp;
-      char * listing[10000];
-      int tempcount = 0;
+#include <stdio.h>
+#include <ctype.h>
+#include <sys/stat.h>
+#include <string.h>
+#include <stdlib.h>
+#include "list.h"
+#define MAX 50
 
-      List * MyList = initialize();
-      printf("Initialized list with size %d\n\n", MyList->size);
+/************************************************
+* Uses state to know the next character read from
+* the local file. Builds a string if an identifier
+* is found. The states are as follow:
+* 0 is space, 1 is alphanum, 2 is comments, 3 is
+* string quotes, 4 is newline/tab, 5 for symbols
+**************************************************/
+int main(int argc, char ** argv){
 
+  // Initialize all global variables
+  int state = 0;
+  char ch, temp;
+  int tempcount = 0;
 
-      FILE * fin = fopen("sample.c", "r");
+  // Initialize the linked-list of identifiers
+  List * MyList = initialize();
 
-      while ( ch = fgetc(fin), ch != EOF){
-          printf("Found char %c \n", ch);
-          printf("The state is %d \n", state);
-          switch (state) {
-  	  case 0:
-  	    if (isalpha(ch)){ // Handle if we find a new identifier
-  	       state = 1; // Change state
-           printf("Changin state from space to word \n\n");
-           int counter = 0;
-           char * token = malloc(MAX * sizeof(char)); // Assume token len < 50
-           token[counter] = ch; // Add the first character
-           counter++; // Increment the counter;
-           temp = fgetc(fin);
-           while ( isalnum(temp) ){
-             if ( (isalnum(temp))){
-               token[counter] = temp;
-               counter++;
-             } else {
-               break;
-             }
-             temp = fgetc(fin);
-             if(isspace(temp)){
-               state = 0;
-               break;
-             }
-           }
-           //printf("Found this token %s \n", token);
-           listing[tempcount] = token;
-           tempcount++;
-	         Identifier *id = &token;
-	         process(MyList, id);
-           break;
-  	  } else if (isspace(ch)){
-  	       state = 0;
-           printf("Keeping state from space to space\n\n");
-           break;
-  	  } else if (ch == '/'){
-  	     state = 2;
-         printf("Changing state from space to comments \n\n");
-         temp = fgetc(fin);
-         while (temp != '\n'){
-           temp = fgetc(fin);
-           if (temp == '\n'){
-             state = 4;
-             printf("Changing state from space to newline/tab \n\n" );
-             break;
-           }
-         }
-         break;
-  	  } else if (ch == '"'){
-        state = 3;
-        printf("Changing state from space to string quotes");
+  // Open the file to be scanned
+  FILE * fin = fopen(argv[1], "r");
+  if(fin == NULL){
+    fprintf(stderr, "File named sample.c not found\n\n");
+    exit(1);
+  }
+
+  while ( ch = fgetc(fin), ch != EOF){ // Switch state based on new char
+    switch (state) {
+      case 0:
+      if (isalpha(ch)){ // State: space to word
+        state = 1;
+        int counter = 0;
+        char * token = malloc(MAX * sizeof(char)); // Assume token len < 50
+        token[counter] = ch; // Add the first character
+        counter++; // Increment the counter;
         temp = fgetc(fin);
-        while(temp != '"')
-          temp = fgetc(fin);
-        break;
-      } else if(ch == '\n' || ch == '\t'){
-        state = 4;
-        printf("Changing state from space to new line or tab \n\n");
-        break;
-      } else {
-        state = 5;
-        printf("State is now %d, changing from space to symbol\n\n", state);
-        break;
-      }
-  	  case 1:
-  	    if (isspace(ch)){
-          state = 0;
-          printf("Changing state from word to space\n\n");
-          break;                    // Switching from letter to letter, unlikely.
-        } else if(ch == '"'){
-  	      state = 3;
-          printf("Changing state from letter to comments "" \n\n");
-  	      temp = fgetc(fin);
-          while(temp != '"')
-            temp = fgetc(fin);      // Switching from letter to string quotes
-  	      break;
-  	   } else if(ch == '\n' || ch == '\t'){
-         state = 4;
-         printf("Changing state from letter to new line or tab \n\n");
-         break;
-       } else if(ch == '/'){
-         state = 2;
-         printf("Word to Comments \n\n");
-         temp = fgetc(fin);
-         while (temp != '\n'){
-           temp = fgetc(fin);
-           if (temp == '\n'){
-             state = 4;
-             printf("Changing state from letter to newline/tab \n\n");
-             break;
-           }
-         }
-         break;
-       } else {
-         printf("\n WE HAVE %c here\n\n", ch);
-         if (isalpha(ch) ){
-           state = 1; // Change state
-           printf("Changin state from space to word \n\n");
-           int counter = 0;
-           char * token = malloc(MAX * sizeof(char)); // Assume token len < 50
-           token[counter] = ch; // Add the first character
-           counter++; // Increment the counter;
-           temp = fgetc(fin);
-           while ( isalnum(temp) ){
-             if ( (isalnum(temp))){
-               token[counter] = temp;
-               counter++;
-             } else {
-               break;
-             }
-             temp = fgetc(fin);
-             if(isspace(temp)){
-               state = 0;
-               break;
-             }
-           }
-           printf("Found this token %s \n", token);
-           Identifier *id = &token;
-	         process(MyList, id);
-           listing[tempcount] = token;
-           tempcount++;
-           break;
-         } else {
-           state = 5;
-           printf("State is now %d, changing from word to symbol\n\n", state);
-           break;
-         }
-
-       }
-  	  case 2:
-  	    if (ch == '/'){
-          state = 2;
-          printf("Keeping state: Comments to comments \n\n" );
-          break;
-  	    } else if (isspace(ch)){
-  	      state = 0;
-          printf("Changing state from comments to space\n\n");
-  	      break;
-  	   } else if(ch == '\n' || ch == '\t'){
-         state = 4;
-         printf("Changing state from comments to new line or tab \n\n");
-         break;
-  	   } else if(isalpha(ch)){
-         state = 1;
-         int counter = 0;
-         printf("Changing state from comments to word \n\n");
-         char * token = malloc(MAX * sizeof(char)); // Assume token len < 50
-         token[counter] = ch; // Add the first character
-         counter++; // Increment the counter;
-         temp = fgetc(fin);
-         while ( isalnum(temp) ){
-           //temp = fgetc(fin);
-           if ( (isalnum(temp) ) ){
-             token[counter] = temp;
-             counter++;
-           } else {
-             break;
-           }
-           temp = fgetc(fin);
-           if(isspace(temp)){
-             state = 0;
-             break;
-           }
-         }
-         printf("Found this token %s \n", token);
-         Identifier *id = &token;
-         process(MyList, id);
-         listing[tempcount] = token;
-         tempcount++;
-         break;
-       } else if(ch == '"'){
-         state = 3;
-         printf("Changing state from comments to string quotes \n\n");
-         temp = fgetc(fin);
-         while(temp != '"')
-            temp = fgetc(fin);      // Switching from letter to string quotes
-         break;
-       } else {
-         state = 5;
-         printf("State is now %d, changing from comments to symbol\n\n", state);
-         break;
-       }
-      case 3:
-        if(ch == '"'){
-          printf("Keeping state: string quotes to string\n\n" );
-          break;
-        } else if(ch == '/'){
-           state = 2;
-           printf("String quotes to comments\n\n");
-           temp = fgetc(fin);
-           while(temp != '\n'){
-             temp = fgetc(fin);
-             if(temp == '\n'){
-               state = 4;
-               printf("Changing state from string quotes to newline \n\n");
-               break;
-             }
-           }
-           break;
-         } else if(isalpha(ch)){
-           state = 1;
-           int counter = 0;
-           printf("String quotes to word\n\n");
-           char * token = malloc(MAX * sizeof(char)); // Assume token len < 50
-           token[counter] = ch; // Add the first character
-           counter++; // Increment the counter;
-           temp = fgetc(fin);
-           while ( isalnum(temp) ){
-             if ( isalnum(temp) ){
-               token[counter] = temp;
-               counter++;
-             } else {
-               break;
-             }
-             temp = fgetc(fin);
-             if(isspace(temp)){
-               state = 0;
-               break;
-             }
-           }
-           printf("Found this token %s \n", token);
-           Identifier *id = &token;
-	         process(MyList, id);
-           listing[tempcount] = token;
-           tempcount++;
-           break;
-         } else {
-           state = 5;
-           printf("State is now %d, changing from quotes to symbol\n\n", state);
-           break;
-         }
-        case 4:
-          if (isalpha(ch)){
-            state = 1;
-            printf("Changing state from new line to identifier \n\n");
-            int counter = 0;
-            char * token = malloc(MAX * sizeof(char)); // Assume token len < 50
-            token[counter] = ch; // Add the first character
-            counter++; // Increment the counter;
-            temp = fgetc(fin);
-            while ( isalnum(temp) ){
-              if ( isalnum(temp) ){
-                token[counter] = temp;
-                counter++;
-              } else {
-                break;
-              }
-              temp = fgetc(fin);
-              if(isspace(temp)){
-                state = 0;
-                break;
-              }
-            }
-            printf("Found this token %s \n", token);
-            Identifier *id = &token;
- 	          process(MyList, id);
-            listing[tempcount] = token;
-            tempcount++;
-            break;
-          } else if (isspace(ch)){
-            state = 0;
-            printf("New line to space \n\n");
-            break;
-          } else if (ch == '"'){
-            state = 3;
-            printf("New line to string quotes \n\n");
-            temp = fgetc(fin);
-            while(temp != '"')
-               temp = fgetc(fin);      // Switching from newline to string quotes
-            break;
-          } else if (ch == '/'){
-            state = 2;
-            printf("Changing state from new line to comments \n\n");
-            temp = fgetc(fin);
-            while(temp != '\n'){
-              temp = fgetc(fin);
-              if(temp == '\n'){
-                state = 4;
-                printf("Keeping state: new line to new line \n\n");
-                break;
-              }
-            }
-            break;
+        while ( isalnum(temp) ){
+          if ( (isalnum(temp))){
+            token[counter] = temp;
+            counter++;
           } else {
-            state = 5;
-            printf("State is now %d, changing from newline to symbol\n\n", state);
             break;
           }
-          case 5:
-            if (isalpha(ch)){
-              state = 1;
-              printf("Symbol to word\n\n");
+          temp = fgetc(fin);
+          if(isspace(temp)){
+            state = 0;
+            break;
+          }
+        }
 
-              int counter = 0;
-              char * token = malloc(MAX * sizeof(char)); // Assume token len < 50
-              token[counter] = ch; // Add the first character
-              counter++; // Increment the counter;
-              temp = fgetc(fin);
-              while ( isalnum(temp) ){
-                if ( isalnum(temp) ){
-                  token[counter] = temp;
-                  counter++;
-                } else {
-                  break;
-                }
-                temp = fgetc(fin);
-                if(isspace(temp)){
-                  state = 0;
-                  break;
-                }
-              }
-              printf("Found this token %s \n", token);
-              listing[tempcount] = token;
-              tempcount++;
-              Identifier *id = &token;
-   	          process(MyList, id);
-              break;
-            } else if (isspace(ch)){
-              state = 0;
-              printf("Symbol to space\n\n");
-              break;
-            } else if (ch == '/'){
-              state = 2;
-              printf("Symbol to comments\n\n");
-              temp = fgetc(fin);
-              while(temp != '\n'){
-                temp = fgetc(fin);
-                if(temp == '\n'){
-                  state = 4;
-                  printf("Keeping state: new line to new line \n\n");
-                  break;
-                }
-              }
-              break;
-            } else if (ch == '"'){
-              state = 3;
-              printf("Symbol to string quotes \n\n");
-              temp = fgetc(fin);
-              while(temp != '"')
-                 temp = fgetc(fin);      // Switching from symbol to string quotes
-              break;
-            } else if (ch == '\n' || ch == '\t' ){
-              state = 4;
-              printf("Symbol to newline \n\n");
-              temp = fgetc(fin);
-              while(temp != '\n'){
-                temp = fgetc(fin);
-                if(temp == '\n'){
-                  state = 4;
-                  printf("Keeping state: new line to newline \n\n");
-                  break;
-                }
-              }
-              break;
+        //printf("Found this token %s \n", token);
+        Identifier *id = &token;
+        process(MyList, id);
+        break;
+      } else if (isspace(ch)){ // Keeping state: space to space
+        state = 0;
+        break;
+      } else if (ch == '/'){ // State: space to comments
+        state = 2;
+        temp = fgetc(fin);
+        while (temp != '\n'){
+          temp = fgetc(fin);
+          if (temp == '\n'){ // State: space to newline
+            state = 4;
+            break;
+          }
+        }
+        break;
+      } else if (ch == '"'){ // State: space to string
+        state = 3;
+        temp = fgetc(fin);
+        while(temp != '"')
+        temp = fgetc(fin);
+        break;
+      } else if(ch == '\n' || ch == '\t'){ // State: space to newline/tab
+        state = 4;
+        break;
+      } else { // State: space to symbol
+        state = 5;
+        break;
+      }
+      case 1:
+      if (isspace(ch)){ // State: word to space
+        state = 0;
+      } else if(ch == '"'){ // State: word to comments
+        state = 3;
+        temp = fgetc(fin);
+        while(temp != '"')
+        temp = fgetc(fin);
+        break;
+      } else if(ch == '\n' || ch == '\t'){ // State: word to newline
+        state = 4;
+        break;
+      } else if(ch == '/'){ // State: word to comments
+        state = 2;
+        temp = fgetc(fin);
+        while (temp != '\n'){
+          temp = fgetc(fin);
+          if (temp == '\n'){ // State: word to newline/tab
+            state = 4;
+            break;
+          }
+        }
+        break;
+      } else {
+        if (isalpha(ch) ){ // State: space to word
+          state = 1;
+          int counter = 0;
+          char * token = malloc(MAX * sizeof(char)); // Assume token len < 50
+          token[counter] = ch; // Add the first character
+          counter++; // Increment the counter;
+          temp = fgetc(fin);
+          while ( isalnum(temp) ){
+            if ( (isalnum(temp))){
+              token[counter] = temp;
+              counter++;
             } else {
               break;
             }
-            default:
-              printf("Something fishy!\n" );
-  	}
-      }
-      printf("\n\n File scanning done \n");
-      int i;
-      /*for(i =0; i < 500; i++){
-        printf("Token number %d is %s\n", i, listing[i]);
-      }*/
-      int countList = 0;
-      Node * top = MyList->top;
-      //printf("First node is %s\n", top->identifier);
-      //top = top->next;
-      //printf("Second node is %s\n", top->identifier);
+            temp = fgetc(fin);
+            if(isspace(temp)){
+              state = 0;
+              break;
+            }
+          }
+          // Process the identifier we found
+          Identifier *id = &token;
+          process(MyList, id);
+          break;
+        } else { // State: word to symbol
+          state = 5;
+          break;
+        }
 
-      while( countList < MyList->size){
-	       printf("The node here is %s, with count %d\n\n", top->identifier, top->count);
-	       top = top->next;
-         countList++;
       }
-      return 0;
+      case 2:
+      if (ch == '/'){ // Keeping state: comments to comments
+        state = 2;
+        break;
+      } else if (isspace(ch)){ // State: comments to space
+        state = 0;
+        break;
+      } else if(ch == '\n' || ch == '\t'){ // State: comments to new line
+        state = 4;
+        break;
+      } else if(isalpha(ch)){ // State: comments to word
+        state = 1;
+        int counter = 0;
+        char * token = malloc(MAX * sizeof(char)); // Assume token len < 50
+        token[counter] = ch; // Add the first character
+        counter++; // Increment the counter;
+        temp = fgetc(fin);
+        while ( isalnum(temp) ){
+          if ( (isalnum(temp) ) ){
+            token[counter] = temp;
+            counter++;
+          } else {
+            break;
+          }
+          temp = fgetc(fin);
+          if(isspace(temp)){
+            state = 0;
+            break;
+          }
+        }
+        // Process the token we have found
+        Identifier *id = &token;
+        process(MyList, id);
+        break;
+      } else if(ch == '"'){ // State: comments to string
+        state = 3;
+        temp = fgetc(fin);
+        while(temp != '"')
+        temp = fgetc(fin);
+        break;
+      } else { // State: comments to symbol
+        state = 5;
+        break;
+      }
+      case 3:
+      if(ch == '"'){ // Starting or ending a string
+        break;
+      } else if(ch == '/'){ // State: string to comments
+        state = 2;
+        temp = fgetc(fin);
+        while(temp != '\n'){
+          temp = fgetc(fin);
+          if(temp == '\n'){ // State: string to newline
+            state = 4;
+            break;
+          }
+        }
+        break;
+      } else if(isalpha(ch)){ // State: string to word
+        state = 1;
+        int counter = 0;
+        char * token = malloc(MAX * sizeof(char)); // Assume token len < 50
+        token[counter] = ch; // Add the first character
+        counter++; // Increment the counter;
+        temp = fgetc(fin);
+        while ( isalnum(temp) ){
+          if ( isalnum(temp) ){
+            token[counter] = temp;
+            counter++;
+          } else {
+            break;
+          }
+          temp = fgetc(fin);
+          if(isspace(temp)){
+            state = 0;
+            break;
+          }
+        }
+
+        // Process the token we have found
+        Identifier *id = &token;
+        process(MyList, id);
+        break;
+      } else { // State: string to symbol
+        state = 5;
+        break;
+      }
+      case 4:
+      if (isalpha(ch)){// State: new line to word
+        state = 1;
+        int counter = 0;
+        char * token = malloc(MAX * sizeof(char)); // Assume token len < 50
+        token[counter] = ch; // Add the first character
+        counter++; // Increment the counter;
+        temp = fgetc(fin);
+        while ( isalnum(temp) ){
+          if ( isalnum(temp) ){
+            token[counter] = temp;
+            counter++;
+          } else {
+            break;
+          }
+          temp = fgetc(fin);
+          if(isspace(temp)){
+            state = 0;
+            break;
+          }
+        }
+
+        // Process the new token we have found
+        Identifier *id = &token;
+        process(MyList, id);
+        break;
+      } else if (isspace(ch)){ // State: new line to space
+        state = 0;
+        break;
+      } else if (ch == '"'){ // State: newline to string
+        state = 3;
+        temp = fgetc(fin);
+        while(temp != '"')
+        temp = fgetc(fin);
+        break;
+      } else if (ch == '/'){ // State: newline to comments
+        state = 2;
+        temp = fgetc(fin);
+        while(temp != '\n'){
+          temp = fgetc(fin);
+          if(temp == '\n'){ // Keeping state: new line to new line
+            state = 4;
+            break;
+          }
+        }
+        break;
+      } else { // State: new line to symbol
+        state = 5;
+        break;
+      }
+      case 5:
+      if (isalpha(ch)){ // State: symbol to word
+        state = 1;
+        int counter = 0;
+        char * token = malloc(MAX * sizeof(char)); // Assume token len < 50
+        token[counter] = ch; // Add the first character
+        counter++; // Increment the counter;
+        temp = fgetc(fin);
+        while ( isalnum(temp) ){
+          if ( isalnum(temp) ){
+            token[counter] = temp;
+            counter++;
+          } else {
+            break;
+          }
+          temp = fgetc(fin);
+          if(isspace(temp)){
+            state = 0;
+            break;
+          }
+        }
+
+        // Process the token we have found
+        Identifier *id = &token;
+        process(MyList, id);
+        break;
+      } else if (isspace(ch)){ // State: symbol to space
+        state = 0;
+        break;
+      } else if (ch == '/'){ // State: symbol to comments
+        state = 2;
+        temp = fgetc(fin);
+        while(temp != '\n'){
+          temp = fgetc(fin);
+          if(temp == '\n'){
+            state = 4;
+            break;
+          }
+        }
+        break;
+      } else if (ch == '"'){ // Symbol to string
+        state = 3;
+        temp = fgetc(fin);
+        while(temp != '"')
+        temp = fgetc(fin);
+        break;
+      } else if (ch == '\n' || ch == '\t' ){ // Symbol to new line/tab
+        state = 4;
+        temp = fgetc(fin);
+        while(temp != '\n'){
+          temp = fgetc(fin);
+          if(temp == '\n'){
+            state = 4;
+            break;
+          }
+        }
+        break;
+      } else {
+        break;
+      }
+      default:
+      printf("No rules for processing character %c\n", ch );
+    }
   }
+
+
+
+// Close the file
+fclose(fin);
+
+// Redirect the result of the program to the sample file
+int countList = 0;
+Node * top = MyList->top;
+while( countList < MyList->size){
+  printf("\nIdentifier: %s, Count: %d \n", top->identifier, top->count);
+  top = top->next;
+  countList++;
+}
+
+return 0;
+}
