@@ -2,8 +2,9 @@
 * The data definition for the self-organizing list
 * @author Gloire Rubambiza
 * @version 03/13/2017
+* Copyright (c) 2017 Gloire Rubambiza All Rights Reserved.
 *************************************************/
-Copyright (c) 2017 Gloire Rubambiza All Rights Reserved.
+
 #include <stdlib.h>
 #include <stdio.h>
 #ifndef H_LIST
@@ -36,12 +37,17 @@ Copyright (c) 2017 Gloire Rubambiza All Rights Reserved.
  /**********************************************
  * Creates a new node to be inserted in the list
  ***********************************************/
- Node createnode(Identifier * id);
+ Node * createnode(Identifier * id);
 
  /*********************
  * Initializes the list
  **********************/
- int initialize( List * list);
+ List * initialize();
+
+ /*************************
+  * Processes a given token
+  * ***********************/
+ void process( List * list, Identifier *id);
 
 
  /*******************************

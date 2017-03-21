@@ -2,16 +2,16 @@
 * Defines the functionality of different methods
 * @author Gloire Rubambiza
 * @version 03/13/2017
+* Copyright (c) 2017 Gloire Rubambiza All Rights Reserved.
 * **********************************************/
-Copyright (c) 2017 Gloire Rubambiza All Rights Reserved.
+
 #include "list.h"
 #include <string.h>
 #define FIRST 1
 #define SECOND 2
-//#define REGMATCH 2
 #define NOMATCH -1
 
-int main(){
+/*int main(){
   List l;
   int initstatus = initialize(&l);
 
@@ -91,23 +91,37 @@ int main(){
 
   return 0;
 
+}*/
+
+/*****************************************
+ * Processes a token found in file scanning
+ * @param token the new token
+ * ***************************************/
+void process( List * list, Identifier *id){
+
+  // Search if the identifier exists in the list
+  Node * associate = createnode(id);
+  int index = search(list, associate);
+
+  if(index < 0){
+    insert(list, associate);
+    printf("The list top is now %s\n", list->top->identifier);
+  } else {
+    movetofront(list, index);
+  }
 }
 
 /***************************************
 * Initializes the list and its head
 * @param list the new list to be created
 ****************************************/
-int initialize( List * list){
-
+List * initialize(){
+  List * MyList = malloc(sizeof(List));
   // Check that we are not initializing a non-empty list
-  if(list->size == 0){
-    return -1;
-  } else {
-    list->top = NULL;
-    list->size = 0;
-  }
+  MyList->top = NULL;
+  MyList->size = 0;
 
-  return 0;
+  return MyList;
 
 }
 
@@ -116,14 +130,14 @@ int initialize( List * list){
 * Sets its counter to 1
 * @param id the newly found identifier
 ***********************************************/
-Node createnode(Identifier * id){
+Node * createnode(Identifier * id){
 
-  Node *newnode = malloc(sizeof(Node));
+  Node * newnode = malloc(sizeof(Node));
   newnode->identifier = malloc(sizeof(Identifier));
   strcpy(newnode->identifier, *id);
   newnode->count = 1;
   newnode->next = NULL;
-  return *newnode;
+  return newnode;
 }
 
 /*********************************
@@ -138,7 +152,8 @@ int insert( List * list, Node * node){
 
     list->top = node;
     list->size++;
-    printf("The new size is %d\n", list->size);
+    //printf("The new size is %d\n", list->size);
+    //printf("The first element is %s\n", list->top->identifier);
     return 0;
 
   } else if(list->top->next == NULL){ // If the second node is empty
@@ -186,26 +201,32 @@ int search(const List * list, Node * node){
    // If the element is at the beginning return right away
    Node * top = list->top;
    if(strcmp(top->identifier, node->identifier) == 0){
-      node->count++;
+      top->count++;
 	    return FIRST;
 
-   } else if (strcmp(top->next->identifier, node->identifier) == 0){
-      node->count++;
-	    return SECOND;
+   } else if (top->next != NULL ){
+      if(strcmp(top->next->identifier, node->identifier) == 0){
+        top->next->count++;
+  	    return SECOND;
+      }
 
+   }
+   if (top->next == NULL ) {
+     return NOMATCH;
    } else {
-
+     printf("Entered no man's land\n\n");
         // Not found in the first or second, loop through
         while(top->next != NULL){
-          top = top->next;
-          counter++;
+
           if (strcmp(top->next->identifier, node->identifier) == 0){
             counter++;
-            node->count++;
+            top->next->count++;
             return counter;
-          } else {
+          } /*else {
             continue;
-          }
+          }*/
+          top = top->next;
+          counter++;
         }
    }
    return NOMATCH;
@@ -223,7 +244,10 @@ int search(const List * list, Node * node){
    Node * current = list->top;
    Node * first = list->top; // To be used 2 elements, with a third present
    Node * second = list->top->next;
-   Node * third = list->top->next->next;
+   /*if(list->size >= 2){
+     Node * third = list->top->next->next;
+   }*/
+
    printf("Current is starting at %s\n", current->identifier);
 
    // Handle the special case if the match is the last node.
@@ -242,7 +266,7 @@ int search(const List * list, Node * node){
        current = current->next;
      }
 
-   } else if(index == 2 && third == NULL){
+   } else if(index == 2 && list->top->next->next == NULL){
 
      current->next->next = list->top;
      list->top = current->next;
@@ -250,9 +274,9 @@ int search(const List * list, Node * node){
      printf("The new top is %s \n", list->top->identifier);
      return 0;
 
-   } else if(index == 2 && third != NULL){
+   } else if(index == 2 && list->top->next->next != NULL){
 
-     current->next = third;
+     current->next = list->top->next->next;
      second->next = current;
      list->top = second;
      printf("Handled the case of second match \n");
